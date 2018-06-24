@@ -3,6 +3,12 @@
 from __future__ import print_function
 import time
 from RF24 import *
+import homeassistant.remote as remote
+import yaml
+
+RPI_V2_GPIO_P1_22 = 25
+BCM2835_SPI_CS0 = 0
+BCM2835_SPI_SPEED_4MHZ = 64
 
 radio = RF24(RPI_V2_GPIO_P1_22, BCM2835_SPI_CS0, BCM2835_SPI_SPEED_4MHZ)
 
@@ -10,6 +16,13 @@ address = [0x3130303030] # "00001" (byte)
 sensor_red = b'led_red'
 sensor_green = b'led_green'
 sensor_orange = b'led_orange'
+
+# Read credentials from secrets.yaml
+credentials = yaml.load(open('/home/homeassistant/.homeassistant/secrets.yaml'))
+password = credentials['http_password']
+api = remote.API('127.0.0.1', password)
+
+print(remote.get_config(api))
 
 print('Starting communication')
 radio.begin()
