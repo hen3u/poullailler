@@ -29,15 +29,47 @@ radio.begin()
 radio.setPALevel(RF24_PA_LOW);
 radio.setDataRate(RF24_250KBPS)
 radio.setChannel(108)
+radio.openReadingPipe(0, address[0]);
 radio.openWritingPipe(address[0])
 radio.printDetails()
 
-# forever loop
+init = True
+
 while True:
-    radio.write(sensor_red[:len(sensor_red)])
-    time.sleep(1)
-    radio.write(sensor_green[:len(sensor_green)])
-    time.sleep(1)
-    radio.write(sensor_orange[:len(sensor_orange)])
-    time.sleep(1)
+
+    if init:
+      radio.stopListening()
+      radio.write(sensor_orange[:len(sensor_orange)])
+      time.sleep(1)
+      radio.startListening()
+      init = False
+
+    switch_moteur = remote.get_state(api, 'switch.moteur')
+    print('{} is {}.'.format(
+        switch_moteur.name, switch_moteur.state)
+    )
+    if switch_moteur.state == "on":
+        radio.stopListening()
+        radio.write(sensor_red[:len(sensor_red)])
+        time.sleep(1)
+        radio.startListening()
+    elif switch_moteur.state == "off":
+        radio.stopListening()
+        radio.write(sensor_green[:len(sensor_green)])
+        time.sleep(1)
+        radio.startListening()
+    if radio.available():
+        print("radio is available")
+        length = radio.getDynamicPayloadSize()
+        receive_payload = radio.read(length)
+        print(receive_payload)
+
+# forever loop
+#while True:
+#    radio.write(sensor_red[:len(sensor_red)])
+#    time.sleep(1)
+#    radio.write(sensor_green[:len(sensor_green)])
+#    time.sleep(1)
+#    radio.write(sensor_orange[:len(sensor_orange)])
+#    time.sleep(1)
 
